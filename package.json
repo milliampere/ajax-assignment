@@ -1,0 +1,28 @@
+{
+  "name": "ajax-assigment",
+  "version": "1.0.0",
+  "description": "Ajax Assignment",
+  "main": "main.js",
+  "scripts": {
+    "start": "gulp",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Camilla Tranberg",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^6.7.7",
+    "babel": "^6.23.0",
+    "babelify": "^7.3.0",
+    "browser-sync": "^2.18.8",
+    "browserify": "^14.1.0",
+    "cssnano": "^3.10.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-postcss": "^6.3.0",
+    "gulp-rename": "^1.0.4",
+    "gulp-sass": "^3.1.0",
+    "gulp-util": "^3.0.8",
+    "openlayers": "^4.0.1",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}

@@ -11,14 +11,16 @@ document.addEventListener('DOMContentLoaded', function(event) {
 /**
  * Model
  */
-const Model  = (function(){
+const Model  = (function() {
 
 	const apikey = 'da45c275bf724721b1a706182adcff1b';
-	const url = 'http://api.trafikinfo.trafikverket.se/v1.1/data.json';
+	const url = 'https://api.trafikinfo.trafikverket.se/v1.1/data.json';
 
+	/**
+	 * Get train stations from API
+	 */
 	var getTrainStationsFromAPI = function(){ 
 		View.loadingIndicatorOn();
-		var url = 'http://api.trafikinfo.trafikverket.se/v1.1/data.json';
 	  var question = `<REQUEST> 
 			                <LOGIN authenticationkey="${apikey}" /> 
 			                <QUERY objecttype="TrainStation"> 
@@ -55,11 +57,11 @@ const Model  = (function(){
 		});
 	};
 
+	/**
+	 * Get traffic situation information from API
+	 */
 	var getSituationsFromAPI = function(){ 
-
 		View.loadingIndicatorOn();
-
-		var url = 'http://api.trafikinfo.trafikverket.se/v1.1/data.json';
 
 		// SWEREF99TM-koordinater för Stockholm: 674130 6579686, 10000 = 1 mil
 		var question = `
@@ -103,8 +105,10 @@ const Model  = (function(){
 		});
 	};
 
+	/**
+	 * Get train messages from API
+	 */
 	var getTrainMessagesFromAPI = function(){ 
-
 		View.loadingIndicatorOn();
 		
 		var question = `
@@ -153,7 +157,7 @@ const Model  = (function(){
 /**
  * View
  */
-const View  = (function(){
+const View  = (function() {
 
 	function loadingIndicatorOn() {
 		document.getElementById("loadingIndicator").style.display = "block";
@@ -166,8 +170,8 @@ const View  = (function(){
 	}
 
 	/**
-	 * Show all train stations
-	 * @param  {Array} stations   Array of all stations
+	 * Show all train stations in index.html
+	 * @param  {Array} stations   Array of station objects
 	 */
 	function showTrainStations(stations){
 		var trainStationList = document.getElementById('trainStationList');
@@ -179,6 +183,10 @@ const View  = (function(){
 		trainStationList.innerHTML = htmlChunk;
 	}
 
+	/**
+	 * Show train messages in index.html
+	 * @param  {Array} messages 	Array of message objects
+	 */
 	function showTrainMessages(messages){
 		var trainMessageList = document.getElementById('trainMessageList');
 		var htmlChunk = '';
@@ -190,6 +198,10 @@ const View  = (function(){
 		trainMessageList.innerHTML = htmlChunk;
 	}
 
+	/**
+	 * Show traffic situations in index.html
+	 * @param  {Array} situations 	Array of situation objects
+	 */
 	function showSituations(situations){
 
 		var situationsList = document.getElementById('situationsList');

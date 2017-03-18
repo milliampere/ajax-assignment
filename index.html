@@ -12,10 +12,27 @@
 
 </head>
 <body>
-<main>
+	<header class="header">
+		<div class="frow row-start">
+			<div class="menu-item" id="carButton"><img src="dist/images/car.svg" class="menu-icon" alt=""></div>
+			<div class="menu-item" id="trainButton"><img src="dist/images/train.svg" class="menu-icon" alt=""></div>
+		</div> <!-- frow -->
+	</header>
+
+	<div class="frow-container"> <!-- wraps the main content of the page and stops from stretching too wide on large displays -->
+	<main>
 
 
-</main>
+		<div id="loadingIndicator" class="loading-indicator"></div>
+
+		<div id="content" class="animate-content">
+			<div id="trainStationList" class="frow"></div>
+			<div id="trainMessageList" class="frow"></div>
+			<div id="situationsList" class="frow"></div>
+		</div>
+
+		</main>
+	</div> <!-- end of frow-container -->
 	<script src="dist/js/bundle.js"></script>
 </body>
 </html>

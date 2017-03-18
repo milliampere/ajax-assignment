@@ -12,10 +12,12 @@
   "devDependencies": {
     "autoprefixer": "^6.7.7",
     "babel": "^6.23.0",
+    "babel-preset-env": "^1.2.2",
     "babelify": "^7.3.0",
     "browser-sync": "^2.18.8",
     "browserify": "^14.1.0",
     "cssnano": "^3.10.0",
+    "frow": "^1.4.6",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-postcss": "^6.3.0",

@@ -47,7 +47,7 @@ gulp.task('babel', () => {
       entries: './src/js/main.js',								// The input file
       debug: true
   })
-  .transform(babelify, { presets: ['latest'] })		// Babelify = babel but for browserify
+  .transform(babelify, { presets: ['env'] })		// Babelify = babel but for browserify
   .on('error',gutil.log)
   .bundle()																				// Pack files together with bundle()
 	.on('error',gutil.log)

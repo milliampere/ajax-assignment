@@ -9,30 +9,38 @@
 	<title>Ajax assignment</title>
 	<link rel="stylesheet" type="text/css" href="dist/css/main.min.css">
   <link rel="icon" href="dist/favicon.png">
-
 </head>
+
 <body>
 	<header class="header">
 		<div class="frow row-start">
 			<div class="menu-item" id="carButton"><img src="dist/images/car.svg" class="menu-icon" alt=""></div>
 			<div class="menu-item" id="trainButton"><img src="dist/images/train.svg" class="menu-icon" alt=""></div>
+			<div class="menu-item" id="mapButton"><img src="dist/images/map.svg" class="menu-icon" alt=""></div>
 		</div> <!-- frow -->
 	</header>
 
+  <div id="map"></div>
+
 	<div class="frow-container"> <!-- wraps the main content of the page and stops from stretching too wide on large displays -->
-	<main>
-
-
-		<div id="loadingIndicator" class="loading-indicator"></div>
-
-		<div id="content" class="animate-content">
-			<div id="trainStationList" class="frow"></div>
-			<div id="trainMessageList" class="frow"></div>
-			<div id="situationsList" class="frow"></div>
-		</div>
-
+		<main>
+			<div id="loadingIndicator" class="loading-indicator"></div>
+			<div id="content" class="animate-content">
+				<div id="trainStationList" class="frow"></div>
+				<div id="trainMessageList" class="frow"></div>
+				<div id="situationsList" class="frow"></div>
+			</div>
 		</main>
 	</div> <!-- end of frow-container -->
-	<script src="dist/js/bundle.js"></script>
+
+	<!-- Scripts -->
+	<script src="dist/js/main.js"></script>
+	<script src="dist/js/view.js"></script>
+	<script src="dist/js/model.js"></script>
+
+	<!-- <script src="dist/js/bundle.js"></script> -->
+	<!-- If async is not present and defer is present: The script is executed when the page has finished parsing, https://developers.google.com/maps/documentation/javascript/tutorial#sync -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBgDWbfzfcY1DZN5aoa59CqKWS59FzaYO4" defer></script>
+
 </body>
 </html>

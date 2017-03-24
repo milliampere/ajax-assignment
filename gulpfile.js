@@ -5,11 +5,7 @@ const postcss = require('gulp-postcss');
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
 const rename = require('gulp-rename');
-const browserify = require('browserify');
 const babel = require('gulp-babel');
-const babelify = require('babelify');
-const source = require('vinyl-source-stream');
-const gutil = require('gulp-util');
 
 
 /* Browser Sync and gulp.watch() */
@@ -41,16 +37,11 @@ gulp.task('sass', () => {
 });
 
 
-/* Babel-task (Browserify) */
 gulp.task('babel', () => {
-  browserify({
-      entries: './src/js/main.js',								// The input file
-      debug: true
-  })
-  .transform(babelify, { presets: ['env'] })		// Babelify = babel but for browserify
-  .on('error',gutil.log)
-  .bundle()																				// Pack files together with bundle()
-	.on('error',gutil.log)
-	.pipe(source('bundle.js'))											// Convert to bundle.js
-	.pipe(gulp.dest('dist/js'));										// Save file
+    return gulp.src('./src/js/*.js')            // The input files
+        .pipe(babel({                           // Babel
+            presets: ['latest']
+        }))
+        .pipe(gulp.dest('dist/js'));            // Save file
 });
+

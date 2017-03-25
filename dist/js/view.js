@@ -96,7 +96,7 @@ var View = function () {
   * Show traffic situations in index.html
   * @param  {Array} situations 	Array of situation objects
   */
-	function showSituations(situations) {
+	function showSituations(situations, type) {
 
 		var situationsList = document.getElementById('situationsList');
 		var htmlChunk = '';
@@ -110,15 +110,20 @@ var View = function () {
 
 
 				for (var i = 0; i < situation.Deviation.length; i++) {
-					var messageType = situation.Deviation[i].MessageType;
-					var iconId = situation.Deviation[i].IconId;
-					var message = situation.Deviation[i].Message;
-					var creationTime = situation.Deviation[i].CreationTime.substring(0, 10);
+					if (situation.Deviation[i].MessageType == type || type == "Alla") {
+						var messageType = situation.Deviation[i].MessageType;
+						var locationDescriptor = situation.Deviation[i].LocationDescriptor;
+						var iconId = situation.Deviation[i].IconId;
+						var message = situation.Deviation[i].Message;
+						var startTime = situation.Deviation[i].StartTime.substring(0, 10);
+						var endTime = situation.Deviation[i].EndTime.substring(0, 10);
 
-					var icon = "<img src=\"http://api.trafikinfo.trafikverket.se/v1/icons/" + iconId + "?type=svg\" class=\"situation-icon\">";
+						var icon = "<img src=\"http://api.trafikinfo.trafikverket.se/v1/icons/" + iconId + "?type=svg\" class=\"situation-icon\">";
 
-					htmlChunk += "<div class=\"situation\">\n\t\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t\t<h5>" + messageType + "</h5>\n\t\t\t\t\t\t\t\t\t\t\t\t" + message + "<br>\n\t\t\t\t\t\t\t\t\t\t\t\tPublicerat: " + creationTime + "\n\t\t\t\t\t\t\t\t\t\t\t</div>";
+						htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h5>" + messageType + "</h5>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span style=\"color: #bad0b8\">" + locationDescriptor + "</span><br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t" + message + "<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\tG\xE4ller: " + startTime + " - " + endTime + "\n\t\t\t\t\t\t\t\t\t\t\t\t</div>";
+					}
 				}
+				situationsList.innerHTML = htmlChunk;
 			}
 		} catch (err) {
 			_didIteratorError3 = true;
@@ -134,8 +139,11 @@ var View = function () {
 				}
 			}
 		}
+	}
 
-		situationsList.innerHTML = htmlChunk;
+	function showNoResultMessage() {
+		var situationsList = document.getElementById('situationsList');
+		situationsList.innerHTML = "<div class=\"situation\">Inget resultat finns att visa.</div>";
 	}
 
 	return {
@@ -143,6 +151,7 @@ var View = function () {
 		loadingIndicatorOff: loadingIndicatorOff,
 		showTrainStations: showTrainStations,
 		showTrainMessages: showTrainMessages,
-		showSituations: showSituations
+		showSituations: showSituations,
+		showNoResultMessage: showNoResultMessage
 	}; // end of return
 }(); // end of View

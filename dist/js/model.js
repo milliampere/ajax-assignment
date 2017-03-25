@@ -61,11 +61,15 @@ var Model = function () {
 	/**
   * Get traffic situation information from API
   */
-	var getSituationsFromAPI = function getSituationsFromAPI() {
+	var getSituationsFromAPI = function getSituationsFromAPI(filter, area, type) {
+		// If no filter is applied, then change filter to an empty string
+		filter = typeof filter != "undefined" ? filter : '';
+		area = typeof area != "undefined" ? area : '';
+		type = typeof type != "undefined" ? type : 'Alla';
+
 		View.loadingIndicatorOn();
 
-		// SWEREF99TM-koordinater för Stockholm: 674130 6579686, 10000 = 1 mil
-		var question = '\n\t\t<REQUEST>\n      <LOGIN authenticationkey="' + apikey + '" />\n      <QUERY objecttype="Situation">\n        <FILTER>\n        \t\t\t<WITHIN name="Deviation.Geometry.SWEREF99TM" shape="center" value="674130 6579686" radius="30000" />\n              <EQ name="Deviation.MessageType" value="V\xE4garbete" />\n        </FILTER>\n        <INCLUDE>Deviation.Id</INCLUDE>\n        <INCLUDE>Deviation.MessageType</INCLUDE>\n        <INCLUDE>Deviation.Message</INCLUDE>\n        <INCLUDE>Deviation.IconId</INCLUDE>\n        <INCLUDE>Deviation.CreationTime</INCLUDE>\n        <INCLUDE>Deviation.Geometry.SWEREF99TM</INCLUDE>\n      </QUERY>\n\t\t</REQUEST>\n\t\t';
+		var question = '\n\t\t<REQUEST>\n      <LOGIN authenticationkey="' + apikey + '" />\n      <QUERY objecttype="Situation">\n        <FILTER>\n        \t\t\t' + area + '\n        \t\t\t' + filter + '\n        </FILTER>\n      </QUERY>\n\t\t</REQUEST>\n\t\t';
 
 		var fetchRequest = fetch(url, {
 			method: 'post',
@@ -81,12 +85,87 @@ var Model = function () {
 		});
 
 		fetchRequest.then(function (data) {
-			setTimeout(View.loadingIndicatorOff, 500); // Timeout for show off
+			setTimeout(View.loadingIndicatorOff, 1000); // Timeout for show off
 			var situations = data.RESPONSE.RESULT[0].Situation;
 
-			View.showSituations(situations);
+			// Init map
+			var stockholm = { lat: 59.326792, lng: 18.065131 };
+			var situationMap = new google.maps.Map(document.getElementById('map'), {
+				zoom: 12,
+				center: stockholm
+			});
+
+			// If situations is empty stop execution
+			if (typeof situations != "undefined") {
+				situations = situations;
+			} else {
+				View.showNoResultMessage();
+				return false;
+			}
+
+			// Put markers on the map
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = situations[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var situation = _step.value;
+
+
+					for (var i = 0; i < situation.Deviation.length; i++) {
+						if (situation.Deviation[i].MessageType == type || type == "Alla") {
+							console.log(situation.Deviation[i]);
+							var iconId = situation.Deviation[i].IconId;
+							var messageType = situation.Deviation[i].MessageType;
+							var coordinates = situation.Deviation[i].Geometry.WGS84;
+							var coords = splitWGS84coordinates(coordinates);
+							var latLng = new google.maps.LatLng(coords[1], coords[0]);
+							var marker = new google.maps.Marker({
+								position: latLng,
+								icon: 'http://api.trafikinfo.trafikverket.se/v1/icons/' + iconId + '?type=png32x32',
+								map: situationMap,
+								clickable: true
+							});
+							//   var infowindow = new google.maps.InfoWindow({
+							// 	content: messageType
+							// });
+							// marker.addListener('click', function() {
+							//    		infowindow.open(situationMap, marker);
+							//  		});
+							//  		
+							attachSecretMessage(marker, messageType);
+						}
+					}
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+
+			View.showSituations(situations, type);
 		});
 	};
+
+	function attachSecretMessage(marker, messageType) {
+		var infowindow = new google.maps.InfoWindow({
+			content: messageType
+		});
+
+		marker.addListener('click', function () {
+			infowindow.open(marker.get('situationMap'), marker);
+		});
+	}
 
 	/**
   * Get train messages from API
@@ -141,13 +220,13 @@ var Model = function () {
 			var messages = data.RESPONSE.RESULT[0].TrainMessage;
 
 			// Put markers on the map
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
+			var _iteratorNormalCompletion2 = true;
+			var _didIteratorError2 = false;
+			var _iteratorError2 = undefined;
 
 			try {
-				for (var _iterator = messages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var message = _step.value;
+				for (var _iterator2 = messages[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+					var message = _step2.value;
 
 					var coordinates = message.Geometry.WGS84;
 					var coords = splitWGS84coordinates(coordinates);
@@ -165,16 +244,16 @@ var Model = function () {
 					// infowindow.open(map,marker);
 				}
 			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
+				_didIteratorError2 = true;
+				_iteratorError2 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
+					if (!_iteratorNormalCompletion2 && _iterator2.return) {
+						_iterator2.return();
 					}
 				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
+					if (_didIteratorError2) {
+						throw _iteratorError2;
 					}
 				}
 			}

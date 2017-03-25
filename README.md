@@ -20,5 +20,6 @@ Create an application that fetch data from open API's and display it as a html s
 * Revealing Module Pattern
 * To write subsequent script tags I load the Google Map API sync instead of async.
 * Added a loading indicator to show when the information is loaded. The loading indicator is CSS.
+* The menu icons (svg) have hover effects to make it easier to understand. 
 
 ### TODO for improvements

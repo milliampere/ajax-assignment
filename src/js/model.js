@@ -75,24 +75,22 @@ const Model  = (function() {
 	/**
 	 * Get traffic situation information from API
 	 */
-	var getSituationsFromAPI = function(){ 
+	var getSituationsFromAPI = function(filter, area, type){
+		// If no filter is applied, then change filter to an empty string
+		filter = (typeof filter != "undefined") ? filter : '';
+		area = (typeof area != "undefined") ? area : '';
+		type = (typeof type != "undefined") ? type : 'Alla';
+
 		View.loadingIndicatorOn();
 
-		// SWEREF99TM-koordinater för Stockholm: 674130 6579686, 10000 = 1 mil
 		var question = `
 		<REQUEST>
       <LOGIN authenticationkey="${apikey}" />
       <QUERY objecttype="Situation">
         <FILTER>
-        			<WITHIN name="Deviation.Geometry.SWEREF99TM" shape="center" value="674130 6579686" radius="30000" />
-              <EQ name="Deviation.MessageType" value="Vägarbete" />
+        			${area}
+        			${filter}
         </FILTER>
-        <INCLUDE>Deviation.Id</INCLUDE>
-        <INCLUDE>Deviation.MessageType</INCLUDE>
-        <INCLUDE>Deviation.Message</INCLUDE>
-        <INCLUDE>Deviation.IconId</INCLUDE>
-        <INCLUDE>Deviation.CreationTime</INCLUDE>
-        <INCLUDE>Deviation.Geometry.SWEREF99TM</INCLUDE>
       </QUERY>
 		</REQUEST>
 		`;
@@ -114,12 +112,69 @@ const Model  = (function() {
 	  });
 
 		fetchRequest.then(data => {
-			setTimeout(View.loadingIndicatorOff, 500);   // Timeout for show off
+			setTimeout(View.loadingIndicatorOff, 1000);   // Timeout for show off
 			var situations = data.RESPONSE.RESULT[0].Situation;
 
-			View.showSituations(situations);
+			// Init map
+			var stockholm = {lat: 59.326792, lng: 18.065131};
+	    var situationMap = new google.maps.Map(document.getElementById('map'), {
+	      zoom: 12,
+	      center: stockholm
+	    });
+
+	    // If situations is empty stop execution
+			if (typeof situations != "undefined") {
+				situations = situations; 
+			} else {
+				View.showNoResultMessage();
+				return false;
+			}
+
+			// Put markers on the map
+			for(var situation of situations){
+
+				for(var i = 0; i < situation.Deviation.length; i++){
+					if (situation.Deviation[i].MessageType == type || type == "Alla" ){
+						console.log(situation.Deviation[i]);
+						var iconId = situation.Deviation[i].IconId;
+						var messageType = situation.Deviation[i].MessageType;
+						var coordinates = situation.Deviation[i].Geometry.WGS84;
+						var coords = splitWGS84coordinates(coordinates);
+			      var latLng = new google.maps.LatLng(coords[1],coords[0]);
+			      var marker = new google.maps.Marker({
+			        position: latLng,
+			        icon: `http://api.trafikinfo.trafikverket.se/v1/icons/${iconId}?type=png32x32`,
+			        map: situationMap, 
+			        clickable: true,
+			      });
+			    //   var infowindow = new google.maps.InfoWindow({
+		  			// 	content: messageType
+		  			// });
+		  			// marker.addListener('click', function() {
+       //    		infowindow.open(situationMap, marker);
+       //  		});
+       //  		
+       			attachSecretMessage(marker, messageType);
+					}
+
+				}
+
+
+	    }
+
+			View.showSituations(situations, type);
 		});
 	};
+
+     function attachSecretMessage(marker, messageType) {
+        var infowindow = new google.maps.InfoWindow({
+          content: messageType
+        });
+
+        marker.addListener('click', function() {
+          infowindow.open(marker.get('situationMap'), marker);
+        });
+     }
 
 	/**
 	 * Get train messages from API

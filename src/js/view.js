@@ -54,31 +54,40 @@ const View  = (function() {
 	 * Show traffic situations in index.html
 	 * @param  {Array} situations 	Array of situation objects
 	 */
-	function showSituations(situations){
+	function showSituations(situations, type){
 
 		var situationsList = document.getElementById('situationsList');
 		var htmlChunk = '';
 		for(var situation of situations){
 
-			for(let i = 0; i < situation.Deviation.length; i++){
-				var messageType = situation.Deviation[i].MessageType;
-				var iconId = situation.Deviation[i].IconId;
-				var message = situation.Deviation[i].Message;
-				var creationTime = situation.Deviation[i].CreationTime.substring(0,10);
-				
-				var icon = `<img src="http://api.trafikinfo.trafikverket.se/v1/icons/${iconId}?type=svg" class="situation-icon">`;
+			for(var i = 0; i < situation.Deviation.length; i++){
+				if (situation.Deviation[i].MessageType == type || type == "Alla"){
+					var messageType = situation.Deviation[i].MessageType;
+					var locationDescriptor = situation.Deviation[i].LocationDescriptor;
+					var iconId = situation.Deviation[i].IconId;
+					var message = situation.Deviation[i].Message;
+					var startTime = situation.Deviation[i].StartTime.substring(0,10);
+					var endTime = situation.Deviation[i].EndTime.substring(0,10);
+					
+					var icon = `<img src="http://api.trafikinfo.trafikverket.se/v1/icons/${iconId}?type=svg" class="situation-icon">`;
 
-				htmlChunk += `<div class="situation">
-												${icon}
-												<h5>${messageType}</h5>
-												${message}<br>
-												Publicerat: ${creationTime}
-											</div>`;
-			}	
-		}
+					htmlChunk += `<div class="situation card-shadow">
+													${icon}
+													<h5>${messageType}</h5>
+													<span style="color: #bad0b8">${locationDescriptor}</span><br>
+													${message}<br>
+													Gäller: ${startTime} - ${endTime}
+												</div>`;
+				}
+			}
 		situationsList.innerHTML = htmlChunk;
+		}
 	}
 
+	function showNoResultMessage(){
+		var situationsList = document.getElementById('situationsList');	
+		situationsList.innerHTML = `<div class="situation">Inget resultat finns att visa.</div>`;	
+	}
 
 	return {
 		loadingIndicatorOn: loadingIndicatorOn,
@@ -86,6 +95,7 @@ const View  = (function() {
 		showTrainStations: showTrainStations,
 		showTrainMessages: showTrainMessages,
 		showSituations: showSituations,
+		showNoResultMessage: showNoResultMessage,
 	}; // end of return
 
 })(); // end of View

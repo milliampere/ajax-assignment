@@ -32,8 +32,15 @@ var Controller = function () {
 		});
 	}
 
+	function loadDropdownTotals() {
+		Model.getTotalTrafficMessages();
+		Model.getTotalRoadworks();
+		Model.getTotalAccidents();
+	}
+
 	return {
-		loadSituationsInterface: loadSituationsInterface
+		loadSituationsInterface: loadSituationsInterface,
+		loadDropdownTotals: loadDropdownTotals
 
 	}; // end of return
 }(); // end of Controller

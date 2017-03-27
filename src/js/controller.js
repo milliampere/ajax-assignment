@@ -22,12 +22,17 @@ const Controller  = (function() {
 	    	else if("Olyckor" === e.options[e.selectedIndex].value){ Model.getSituationsFromAPI(accident, stockholm, "Olycka"); }
 	    }
 		});
-
 	}
 
+	function loadDropdownTotals(){
+		Model.getTotalTrafficMessages();
+		Model.getTotalRoadworks();
+		Model.getTotalAccidents();
+	}	
 
 	return {
 		loadSituationsInterface: loadSituationsInterface,
+		loadDropdownTotals: loadDropdownTotals,
 
 	}; // end of return
 

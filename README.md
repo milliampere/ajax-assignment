@@ -17,9 +17,12 @@ Create an application that fetch data from open API's and display it as a html s
 
 ## Process
 * I use vanilla JavaScript and fetch() to get data. To display the data I use Frow CSS Grid System. 
-* Revealing Module Pattern
+* Design pattern: Revealing Module Pattern
 * To write subsequent script tags I load the Google Map API sync instead of async.
-* Added a loading indicator to show when the information is loaded. The loading indicator is CSS.
-* The menu icons (svg) have hover effects to make it easier to understand. 
+* Added a loading indicator to show when the information is loaded. The loading indicator is created with only CSS.
+* The menu icons (svg) have hover effects. 
+* Added the total number per situation in the dropdown menu.  
 
 ### TODO for improvements
+* Close previous infowindows when a new marker is clicked. 
+* Add pagination for the results 

@@ -76,6 +76,7 @@ const Model  = (function() {
 	 * Get traffic situation information from API
 	 */
 	var getSituationsFromAPI = function(filter, area, type){
+
 		// If no filter is applied, then change filter to an empty string
 		filter = (typeof filter != "undefined") ? filter : '';
 		area = (typeof area != "undefined") ? area : '';
@@ -86,7 +87,7 @@ const Model  = (function() {
 		var question = `
 		<REQUEST>
       <LOGIN authenticationkey="${apikey}" />
-      <QUERY objecttype="Situation">
+      <QUERY objecttype="Situation" orderby="Deviation.CreationTime desc">
         <FILTER>
         			${area}
         			${filter}
@@ -112,69 +113,206 @@ const Model  = (function() {
 	  });
 
 		fetchRequest.then(data => {
-			setTimeout(View.loadingIndicatorOff, 1000);   // Timeout for show off
+			setTimeout(View.loadingIndicatorOff, 700);   // Timeout for show off
 			var situations = data.RESPONSE.RESULT[0].Situation;
-
-			// Init map
-			var stockholm = {lat: 59.326792, lng: 18.065131};
-	    var situationMap = new google.maps.Map(document.getElementById('map'), {
-	      zoom: 12,
-	      center: stockholm
-	    });
 
 	    // If situations is empty stop execution
 			if (typeof situations != "undefined") {
 				situations = situations; 
 			} else {
 				View.showNoResultMessage();
+				View.initEmptyMap();
 				return false;
 			}
 
-			// Put markers on the map
-			for(var situation of situations){
-
-				for(var i = 0; i < situation.Deviation.length; i++){
-					if (situation.Deviation[i].MessageType == type || type == "Alla" ){
-						console.log(situation.Deviation[i]);
-						var iconId = situation.Deviation[i].IconId;
-						var messageType = situation.Deviation[i].MessageType;
-						var coordinates = situation.Deviation[i].Geometry.WGS84;
-						var coords = splitWGS84coordinates(coordinates);
-			      var latLng = new google.maps.LatLng(coords[1],coords[0]);
-			      var marker = new google.maps.Marker({
-			        position: latLng,
-			        icon: `http://api.trafikinfo.trafikverket.se/v1/icons/${iconId}?type=png32x32`,
-			        map: situationMap, 
-			        clickable: true,
-			      });
-			    //   var infowindow = new google.maps.InfoWindow({
-		  			// 	content: messageType
-		  			// });
-		  			// marker.addListener('click', function() {
-       //    		infowindow.open(situationMap, marker);
-       //  		});
-       //  		
-       			attachSecretMessage(marker, messageType);
-					}
-
-				}
-
-
-	    }
-
+			// Show situations in text
 			View.showSituations(situations, type);
+
+			// Init map and markers
+			View.initMap(situations, type);
+
 		});
 	};
 
-     function attachSecretMessage(marker, messageType) {
-        var infowindow = new google.maps.InfoWindow({
-          content: messageType
-        });
 
-        marker.addListener('click', function() {
-          infowindow.open(marker.get('situationMap'), marker);
-        });
-     }
+	/**
+	 * Get one traffic situation information from API
+	 * @param {String} id  		Id of the situation
+	 * @param {String} type 	Type of situation ('Alla', 'Trafikmeddelande', 'Vägarbete', 'Olycka'..) 
+	 */
+	function getOneSituationFromAPI(id, type) {
+
+		var question = `
+		<REQUEST>
+      <LOGIN authenticationkey="${apikey}" />
+      <QUERY objecttype="Situation">
+      	<FILTER>
+				<EQ name="Deviation.Id" value="${id}" />
+				</FILTER>
+      </QUERY>
+		</REQUEST>
+		`;
+
+	  var fetchRequest = fetch(url,
+	  {
+	    method: 'post',
+	    mode: 'cors', 
+	    body: question,
+	    headers: {
+	      'Content-Type': 'text/xml'
+	 		}
+	  })
+	  .then((response) => {
+	    return response.json();
+	  })
+		.catch(error => {
+	  	console.log(error);
+	  });
+
+		fetchRequest.then(data => {
+			var situations = data.RESPONSE.RESULT[0].Situation;
+
+			// Show situation in text
+			View.showSituations(situations, type);
+		});
+	}
+
+
+	function getTotalTrafficMessages() {
+
+		var question = `
+			<REQUEST>
+			      <LOGIN authenticationkey="${apikey}" />
+			      <QUERY objecttype="Situation">
+			            <FILTER>
+			                  <WITHIN name='Deviation.Geometry.SWEREF99TM' shape='center' value='674130 6579686' radius='30000' />
+			                  <EQ name='Deviation.MessageType' value='Trafikmeddelande' />
+			            </FILTER>
+			            <INCLUDE>Deviation.MessageType</INCLUDE>
+			      </QUERY>
+			</REQUEST>
+		`;
+
+	  var fetchRequest = fetch(url,
+	  {
+	    method: 'post',
+	    mode: 'cors', 
+	    body: question,
+	    headers: {
+	      'Content-Type': 'text/xml'
+	 		}
+	  })
+	  .then((response) => {
+	    return response.json();
+	  })
+		.catch(error => {
+	  	console.log(error);
+	  });
+
+		fetchRequest.then(data => {
+			var situations = data.RESPONSE.RESULT[0].Situation;
+			var total = situationCounter(situations);
+			View.appendTotalToDropdown("Trafikmeddelanden", total);
+		});
+	}
+
+	function getTotalRoadworks() {
+
+		var question = `
+			<REQUEST>
+			      <LOGIN authenticationkey="${apikey}" />
+			      <QUERY objecttype="Situation">
+			            <FILTER>
+			                  <WITHIN name='Deviation.Geometry.SWEREF99TM' shape='center' value='674130 6579686' radius='30000' />
+			                  <EQ name='Deviation.MessageType' value='Vägarbete' />
+			            </FILTER>
+			            <INCLUDE>Deviation.MessageType</INCLUDE>
+			      </QUERY>
+			</REQUEST>
+		`;
+
+	  var fetchRequest = fetch(url,
+	  {
+	    method: 'post',
+	    mode: 'cors', 
+	    body: question,
+	    headers: {
+	      'Content-Type': 'text/xml'
+	 		}
+	  })
+	  .then((response) => {
+	    return response.json();
+	  })
+		.catch(error => {
+	  	console.log(error);
+	  });
+
+		fetchRequest.then(data => {
+			var situations = data.RESPONSE.RESULT[0].Situation;
+			var total = situationCounter(situations);
+			View.appendTotalToDropdown("Vägarbeten", total);
+		});
+	}
+
+/**
+ * Get total number of accidents. Include only MessageType for minimum request size.
+ */
+	function getTotalAccidents() {
+
+		var question = `
+			<REQUEST>
+			      <LOGIN authenticationkey="${apikey}" />
+			      <QUERY objecttype="Situation">
+			            <FILTER>
+			                  <WITHIN name='Deviation.Geometry.SWEREF99TM' shape='center' value='674130 6579686' radius='30000' />
+			                  <EQ name='Deviation.MessageType' value='Olycka' />
+			            </FILTER>
+			            <INCLUDE>Deviation.MessageType</INCLUDE>
+			      </QUERY>
+			</REQUEST>
+		`;
+
+	  var fetchRequest = fetch(url,
+	  {
+	    method: 'post',
+	    mode: 'cors', 
+	    body: question,
+	    headers: {
+	      'Content-Type': 'text/xml'
+	 		}
+	  })
+	  .then((response) => {
+	    return response.json();
+	  })
+		.catch(error => {
+	  	console.log(error);
+	  });
+
+		fetchRequest.then(data => {
+			var situations = data.RESPONSE.RESULT[0].Situation;
+			var total;
+			// If situations is empty stop execution
+			if (typeof situations != "undefined") {
+				total = situationCounter(situations); 
+			} else {
+				total = 0;
+			}
+			View.appendTotalToDropdown("Olyckor", total);
+		});
+	}
+
+	/**
+	 * Count number of situations
+	 * @param  {Object} situations 
+	 * @return {Number}             	Number of situations
+	 */
+	function situationCounter(situations){
+		var totalSituations = 0;
+			for(let i = 1; i<= situations.length; i++){
+				totalSituations++;
+			}
+		return totalSituations;	
+	}
 
 	/**
 	 * Get train messages from API
@@ -274,18 +412,49 @@ const Model  = (function() {
   }
 
 
+	/**
+	 * Change time format into YYYY-MM-DD hh:mm
+	 * @param  {String} time  	Time in any format
+	 * @return {String}        	Time in format YYYY-MM-DD hh:mm
+	 */
+  function changeTimeFormat(time){
+  	if(typeof time == "undefined"){
+  		return "";
+  	}
+  	else {
+  		// Get the time in milliseconds since January 1, 1970
+  		var msec = Date.parse(time);
+  		// Get the time in ISO format, remove seconds and replace T
+			var formattedTime = new Date(msec).toISOString().substr(0, 16).replace('T', ' ');
+			return formattedTime;
+		}
+	}	
+
+	/**
+	 * Split WGS84 coordinates 
+	 * @param  {String} coordinates  	"POINT (xx.xxx xx.xxx)"
+	 * @return {Array}   							[xx.xxx, xx.xxx]        		
+	 */
 	function splitWGS84coordinates(coordinates){
-		var coordinatesSplit = coordinates.replace('(',' ').replace(')',' ').split(/[\s,]+/);
-		var lng = Number(coordinatesSplit[1]);
-		var lat = Number(coordinatesSplit[2]);
+		// Remove POINT and paranteses, then split into an array of substrings
+		var coordinatesSplit = coordinates.replace('POINT (','').replace(')','').split(/[\s,]+/);
+		// Convert to number
+		var lng = Number(coordinatesSplit[0]);
+		var lat = Number(coordinatesSplit[1]);
 		return [lng,lat];
 	}
 
 	return {
 		getTrainStationsFromAPI: getTrainStationsFromAPI,
 		getSituationsFromAPI: getSituationsFromAPI,
+		getTotalTrafficMessages: getTotalTrafficMessages,
+		getTotalRoadworks: getTotalRoadworks,
+		getTotalAccidents: getTotalAccidents,
 		getTrainMessagesFromAPI: getTrainMessagesFromAPI,
 		initMap: initMap,
+		changeTimeFormat: changeTimeFormat,
+		splitWGS84coordinates: splitWGS84coordinates,
+		getOneSituationFromAPI: getOneSituationFromAPI,
 	}; // end of return
 })(); // end of Model
 

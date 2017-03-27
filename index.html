@@ -49,7 +49,7 @@
 		</div> <!-- end of main menu -->
 
 		<!-- start of sub menu -->
-		<div class="frow row-start menu-sub">
+		<div class="frow row-start menu-sub animate-submenu" id="menu-sub">
 			<div>
 				<select name="types" class="reset menu-select" id="menu-select">
 					<option value="Alla">Alla</option>
@@ -64,10 +64,10 @@
 	<!-- wraps the main content of the page and stops from stretching too wide on large displays (frow-container) -->
 	<main class="container"> 
 		<div class="frow">
-			<div class="col-md-1-2">
+			<div class="col-md-3-5">
 				<div id="map"></div>
 			</div>
-			<div class="col-md-1-2 loading-indicator-relative">
+			<div class="col-md-2-5 loading-indicator-relative">
 				<div id="loadingIndicator" class="loading-indicator"></div>
 				<div id="content" class="animate-content">
 					<div id="situationsList" class="frow"></div>
@@ -75,6 +75,11 @@
 			</div>
 		</div>
 	</main> <!-- end of container -->
+
+	<footer>
+		<div class="frow row-start footer">
+		</div>
+	</footer>
 
 	<!-- Scripts -->
 	<script src="dist/js/main.js"></script>

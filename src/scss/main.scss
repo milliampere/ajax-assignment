@@ -8,6 +8,8 @@ $paragraf: Georgia, sans-serif;
 $background: #bad0b8;
 $white: #FFF; 
 $grey: #57676e;
+$yellow: #eeb832;
+$red: #d13d40;
 
 html{
 	height: 100%;
@@ -47,6 +49,11 @@ h4 {font-size: 1.125rem;}
 h5 {font-size: 1rem;}
 h6 {font-size: 0.875rem;}
 
+.small {
+	font-size: 0.8rem;
+	color: #a8a8a8;
+	font-family: Verdana;
+}
 
 /*Styles the menu*/
 .menu-main {
@@ -86,20 +93,18 @@ h6 {font-size: 0.875rem;}
 /* wraps the main content of the page */ 
 .container {
 	margin: 1rem;
-	margin-left: 7rem;
-	max-width: 1200px;
+	max-width: 1300px;
 }
 
 
 /*The map*/
 #map {
-height: 85vh;
+height: 82vh;
 width: 100%;
 }
 
-
 /* The loading indicator */
-.relative {
+.loading-indicator-relative {
 	position: relative;
 }
 .loading-indicator {
@@ -148,3 +153,41 @@ width: 100%;
   to{ bottom:0; opacity:1 }
 }
 
+/* Add animation to submenu */
+.animate-submenu {
+  animation: fadeIn ease-in 1s;
+}
+
+@keyframes fadeIn { 
+  from{ top:-100px; opacity:0 } 
+  to{ top:0; opacity:1 }
+}
+
+@keyframes fadeOut { 
+	0%{ opacity: 1; visibility: visible; } 
+	100%{ opacity: 0; visibility: hidden;} 
+}
+
+/*Footer*/
+.footer {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	height: 2vh;
+	background-color: $yellow;
+}
+
+
+/*Media query*/
+@media (max-width: 992px) {
+  #map {
+    height: 50vh;
+    margin-bottom: 0.5rem;
+  }
+  .container{
+  	margin: 1rem 1.5rem;
+  }
+  .situation{
+  	margin: 0.5rem 0;
+  }
+}

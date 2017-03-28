@@ -66,7 +66,7 @@ const View  = (function() {
 					var message = situation.Deviation[i].Message || ' ';
 					var startTime = Model.changeTimeFormat(situation.Deviation[i].StartTime);
 					var endTime = Model.changeTimeFormat(situation.Deviation[i].EndTime);
-					var icon = `<img src="http://api.trafikinfo.trafikverket.se/v1/icons/${iconId}?type=svg" class="situation-icon">`;
+					var icon = `<img src="dist/images/icons/svg/${iconId}.svg" class="situation-icon">`;
 
 					htmlChunk += `<div class="situation card-shadow">
 													${icon}
@@ -137,7 +137,7 @@ const View  = (function() {
 			      var latLng = new google.maps.LatLng(coords[1],coords[0]);
 			      var marker = new google.maps.Marker({
 			        position: latLng,
-			        icon: `http://api.trafikinfo.trafikverket.se/v1/icons/${iconId}?type=png32x32`,
+			        icon: `dist/images/icons/png/${iconId}.png`,
 			        map: map, 
 			        clickable: true, 
 			      });

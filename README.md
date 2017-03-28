@@ -22,6 +22,7 @@ Create an application that fetch data from open API's and display it as a html s
 * Added a loading indicator to show when the information is loaded. The loading indicator is created with only CSS.
 * The menu icons (svg) have hover effects. 
 * Added the total number per situation in the dropdown menu.  
+* "Mixed Content: The page at was loaded over HTTPS, but requested an insecure image": had to save the icons instead of requesting them. 
 
 ### TODO for improvements
 * Close previous infowindows when a new marker is clicked. 

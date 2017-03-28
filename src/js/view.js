@@ -4,97 +4,29 @@
  */
 const View  = (function() {
 
+	/**
+	 * Show Loading indicator
+	 */
 	function loadingIndicatorOn() {
 		document.getElementById("loadingIndicator").style.display = "block";
 		document.getElementById("content").style.display = "none";
 	}
 
+	/**
+	 * Hide Loading indicator
+	 */
 	function loadingIndicatorOff(){
 		document.getElementById("loadingIndicator").style.display = "none";
 		document.getElementById("content").style.display = "block";
 	}
 
 	/**
-	 * Show all train stations in index.html
-	 * @param  {Array} stations   Array of station objects
+	 * Show message when there is zero deviations found
 	 */
-	function showTrainStations(stations){
-		var trainStationList = document.getElementById('trainStationList');
-		console.log(stations);
-		var htmlChunk = '';
-		for(var station of stations){
-			htmlChunk += `<div class="train-stations"><h5>${station.AdvertisedLocationName}</h5> (${station.LocationSignature}): ${station.Geometry.SWEREF99TM}</div> `;
-		}
-		trainStationList.innerHTML = htmlChunk;
-	}
-
-	/**
-	 * Show train messages in index.html
-	 * @param  {Array} messages 	Array of message objects
-	 */
-	function showTrainMessages(){
-		View.loadingIndicatorOn();
-		setTimeout(View.loadingIndicatorOff, 500);   // Timeout for show off
-
-		var messages = Model.getTrainMessagesFromAPI();
-
-		var trainMessageList = document.getElementById('trainMessageList');
-		var htmlChunk = '';
-		for(var message of messages){
-			htmlChunk += `<div class="train-messages">
-											<h5>${message.AffectedLocation}</h5> 
-											<p>(${message.ExternalDescription}): ${message.ReasonCodeText}</p></div> `;
-		}
-		trainMessageList.innerHTML = htmlChunk;
-	}
-
-	/**
-	 * Show traffic situations in index.html
-	 * @param  {Array} situations 	Array of situation objects
-	 */
-	function showSituations(situations, type){
-
-		var situationsList = document.getElementById('situationsList');
-		var htmlChunk = '';
-		for(var situation of situations){
-
-			for(var i = 0; i < situation.Deviation.length; i++){
-				if (situation.Deviation[i].MessageType == type || type == "Alla"){
-					var messageType = situation.Deviation[i].MessageType;
-					var locationDescriptor = situation.Deviation[i].LocationDescriptor || ' ';
-					var iconId = situation.Deviation[i].IconId;
-					var message = situation.Deviation[i].Message || ' ';
-					var startTime = Model.changeTimeFormat(situation.Deviation[i].StartTime);
-					var endTime = Model.changeTimeFormat(situation.Deviation[i].EndTime);
-					var icon = `<img src="dist/images/icons/svg/${iconId}.svg" class="situation-icon">`;
-
-					htmlChunk += `<div class="situation card-shadow">
-													${icon}
-													<h5>${messageType}</h5>
-													<span class="small">${startTime} - ${endTime}</span><br>  
-													${locationDescriptor}
-													${message}
-												</div>`;
-				}
-			}
-		situationsList.innerHTML = htmlChunk;
-		}
-	}
-
-	// Show no result message
 	function showNoResultMessage(){
 		var situationsList = document.getElementById('situationsList');	
 		situationsList.innerHTML = `<div class="situation">Inget resultat finns att visa.</div>`;	
 	}
-
-	// Init empty map
-	function initEmptyMap(){
-		var stockholm = {lat: 59.326792, lng: 18.065131};
-    var map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 10,
-      center: stockholm
-  	});
-  }
 
 	/**
 	 * Append total number per situation to dropdown in menu
@@ -111,72 +43,126 @@ const View  = (function() {
 	}
 
 	/**
-	 * Init map with markers 
-	 * @param  {Array} situations 
-	 * @param  {String} type       Type of situation
+	 * Show traffic messages in index.html
+	 * @param  {Array} deviations 	Array of deviations objects
 	 */
-	function initMap(situations, type){
-			// Init map
-			var stockholm = {lat: 59.326792, lng: 18.065131};
-	    var map = new google.maps.Map(document.getElementById('map'), {
-	      zoom: 10,
-	      center: stockholm
-	    });
+	function showDeviations(deviations){
+		var situationsList = document.getElementById('situationsList');
+		var htmlChunk = '';
 
-			// Put markers on the map
-			for(var situation of situations){
-				for(var i = 0; i < situation.Deviation.length; i++){
-					var dev = situation.Deviation[i];
-					if (dev.MessageType == type || type == "Alla" ){
-						var iconId = dev.IconId;
-						var type = dev.MessageType;
-						var location = dev.LocationDescriptor;
-						var coordinates = dev.Geometry.WGS84;
-						var id = dev.Id;
-						var coords = Model.splitWGS84coordinates(coordinates);
-			      var latLng = new google.maps.LatLng(coords[1],coords[0]);
-			      var marker = new google.maps.Marker({
-			        position: latLng,
-			        icon: `dist/images/icons/png/${iconId}.png`,
-			        map: map, 
-			        clickable: true, 
-			      });
-			    	// Attach infowindow to marker
-			      var content = `${type}: <br>${location}<br><span onclick="Model.getOneSituationFromAPI('${id}', '${type}')">Läs mer</span>`;
-       			View.attachInfoWindow(marker, content, id);
-					}
-				}
-	    }
+		// Create piece of html for every deviation
+		for(var deviation of deviations){
+			var type = deviation.MessageType;
+			var id = deviation.Id;
+			var message = deviation.Message || ' ';
+			var code = deviation.MessageCode;
+			var road = deviation.RoadNumber || ' ';
+			var location = deviation.LocationDescriptor || ' ';
+			var start = Model.changeTimeFormat(deviation.StartTime);
+			var end = Model.changeTimeFormat(deviation.EndTime);
+			var icon = `<img src="dist/images/icons/svg/${deviation.IconId}.svg" class="situation-icon">`;
+		
+			htmlChunk += `<div class="situation card-shadow">
+											${icon}
+											<h5>${type}</h5>
+											${code}
+											<span class="small">${start} - ${end}</span><br>
+											${location} ${road} ${message}
+										</div>`;
+			}
+		// Append to index.html
+		situationsList.innerHTML = htmlChunk;
+	}
+
+
+	/*********
+	 *  MAP
+	 *********/
+
+	var map;
+	var markers = [];
+
+	/**
+	 * Adds marker for each deviation to the map
+	 * @param {Array} deviations    Array of deviation objects
+	 */
+	function addMarkers(deviations){
+
+		// Clears the map from old markers
+		View.clearMarkers();
+
+		for(var deviation of deviations){
+			var icon = deviation.IconId;
+			var type = deviation.MessageType;
+			var id = deviation.Id;
+			var coordinate = deviation.Geometry.WGS84;
+			var coords = Model.splitWGS84coordinates(coordinate);
+			var latLng = new google.maps.LatLng(coords[1],coords[0]);
+
+			// Adds a marker at the specified coordinates in latLang and push to the array
+			var marker = new google.maps.Marker({
+	      position: latLng,
+	      icon: `dist/images/icons/png/${icon}.png`,
+	      map: map, 
+	      clickable: true, 
+		    });
+			markers.push(marker);
+		  
+		  // Adds an infowindow to the markers
+	  	View.addInfowindow(marker, type, id);
+		}		
 	}
 
 	/**
-	 * Attach info window to marker
+	 * Attach infowindow to marker
 	 * @param  {Object} marker      
-	 * @param  {String} content 	
+	 * @param  {String} type 	
 	 * @param  {String} id 		            
 	 */
-	function attachInfoWindow(marker, content, id) {
+	function addInfowindow(marker, type, id) {
+		var content = `${type}: <br><span onclick="Model.getOneDeviationFromAPI('${id}')">Visa</span>`;
 	  var infowindow = new google.maps.InfoWindow({
 	    content: content,
 	    maxWidth: "200",
 	    id: id,
 	  });
+	  // This event listener will open the infowindow when the marker is clicked.
 	  marker.addListener('click', function() {
 	    infowindow.open(marker.get('map'), marker);
 	  });
 	}
 
+	/**
+	 * Clear the map from markers, to be used before adding new markers
+	 */
+  function clearMarkers() {
+    for (var i = 0; i < markers.length; i++) {
+      markers[i].setMap(null);
+    }
+    markers = [];
+  }
+
+	// Init empty map
+	function initEmptyMap(){
+		var stockholm = {lat: 59.326792, lng: 18.065131};
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 10,
+      center: stockholm
+  	});
+  }
+
+
 	return {
 		loadingIndicatorOn: loadingIndicatorOn,
 		loadingIndicatorOff: loadingIndicatorOff,
-		showTrainStations: showTrainStations,
-		showTrainMessages: showTrainMessages,
 		appendTotalToDropdown: appendTotalToDropdown,
-		initMap: initMap,
-		showSituations: showSituations,
 		showNoResultMessage: showNoResultMessage,
+		showDeviations: showDeviations,
 		initEmptyMap: initEmptyMap,
-		attachInfoWindow: attachInfoWindow,
+		addMarkers: addMarkers,
+		addInfowindow: addInfowindow,
+		clearMarkers: clearMarkers,
+
 	}; // end of return
 
 })(); // end of View

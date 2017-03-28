@@ -24,7 +24,7 @@ var Controller = function () {
 				if ("Trafikmeddelanden" === e.options[e.selectedIndex].value) {
 					Model.getSituationsFromAPI(trafficmessage, stockholm, "Trafikmeddelande");
 				} else if ("Vägarbeten" === e.options[e.selectedIndex].value) {
-					Model.getSituationsFromAPI(roadwork, stockholm, "Vägarbete");
+					Model.getRoadworksFromAPI();
 				} else if ("Olyckor" === e.options[e.selectedIndex].value) {
 					Model.getSituationsFromAPI(accident, stockholm, "Olycka");
 				}
@@ -32,15 +32,8 @@ var Controller = function () {
 		});
 	}
 
-	function loadDropdownTotals() {
-		Model.getTotalTrafficMessages();
-		Model.getTotalRoadworks();
-		Model.getTotalAccidents();
-	}
-
 	return {
-		loadSituationsInterface: loadSituationsInterface,
-		loadDropdownTotals: loadDropdownTotals
+		loadSituationsInterface: loadSituationsInterface
 
 	}; // end of return
 }(); // end of Controller

@@ -5,33 +5,48 @@
  */
 var View = function () {
 
+	/**
+  * Show Loading indicator
+  */
 	function loadingIndicatorOn() {
 		document.getElementById("loadingIndicator").style.display = "block";
 		document.getElementById("content").style.display = "none";
 	}
 
+	/**
+  * Hide Loading indicator
+  */
 	function loadingIndicatorOff() {
 		document.getElementById("loadingIndicator").style.display = "none";
 		document.getElementById("content").style.display = "block";
 	}
 
 	/**
-  * Show all train stations in index.html
-  * @param  {Array} stations   Array of station objects
+  * Show message when there is zero deviations found
   */
-	function showTrainStations(stations) {
-		var trainStationList = document.getElementById('trainStationList');
-		console.log(stations);
-		var htmlChunk = '';
+	function showNoResultMessage() {
+		var situationsList = document.getElementById('situationsList');
+		situationsList.innerHTML = "<div class=\"situation\">Inget resultat finns att visa.</div>";
+	}
+
+	/**
+  * Append total number per situation to dropdown in menu
+  * @param  {String} type    Type of situation
+  * @param  {Number} total   Number of situations
+  */
+	function appendTotalToDropdown(type, total) {
+		var menuSelect = document.getElementById("menu-select");
 		var _iteratorNormalCompletion = true;
 		var _didIteratorError = false;
 		var _iteratorError = undefined;
 
 		try {
-			for (var _iterator = stations[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var station = _step.value;
+			for (var _iterator = menuSelect[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var option = _step.value;
 
-				htmlChunk += "<div class=\"train-stations\"><h5>" + station.AdvertisedLocationName + "</h5> (" + station.LocationSignature + "): " + station.Geometry.SWEREF99TM + "</div> ";
+				if (option.value == type) {
+					option.innerHTML = type + " (" + total + ")";
+				}
 			}
 		} catch (err) {
 			_didIteratorError = true;
@@ -47,32 +62,38 @@ var View = function () {
 				}
 			}
 		}
-
-		trainStationList.innerHTML = htmlChunk;
 	}
 
 	/**
-  * Show train messages in index.html
-  * @param  {Array} messages 	Array of message objects
+  * Show traffic messages in index.html
+  * @param  {Array} deviations 	Array of deviations objects
   */
-	function showTrainMessages() {
-		View.loadingIndicatorOn();
-		setTimeout(View.loadingIndicatorOff, 500); // Timeout for show off
-
-		var messages = Model.getTrainMessagesFromAPI();
-
-		var trainMessageList = document.getElementById('trainMessageList');
+	function showDeviations(deviations) {
+		var situationsList = document.getElementById('situationsList');
 		var htmlChunk = '';
+
+		// Create piece of html for every deviation
 		var _iteratorNormalCompletion2 = true;
 		var _didIteratorError2 = false;
 		var _iteratorError2 = undefined;
 
 		try {
-			for (var _iterator2 = messages[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-				var message = _step2.value;
+			for (var _iterator2 = deviations[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+				var deviation = _step2.value;
 
-				htmlChunk += "<div class=\"train-messages\">\n\t\t\t\t\t\t\t\t\t\t\t<h5>" + message.AffectedLocation + "</h5> \n\t\t\t\t\t\t\t\t\t\t\t<p>(" + message.ExternalDescription + "): " + message.ReasonCodeText + "</p></div> ";
+				var type = deviation.MessageType;
+				var id = deviation.Id;
+				var message = deviation.Message || ' ';
+				var code = deviation.MessageCode;
+				var road = deviation.RoadNumber || ' ';
+				var location = deviation.LocationDescriptor || ' ';
+				var start = Model.changeTimeFormat(deviation.StartTime);
+				var end = Model.changeTimeFormat(deviation.EndTime);
+				var icon = "<img src=\"dist/images/icons/svg/" + deviation.IconId + ".svg\" class=\"situation-icon\">";
+
+				htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t<h5>" + type + "</h5>\n\t\t\t\t\t\t\t\t\t\t\t" + code + "\n\t\t\t\t\t\t\t\t\t\t\t<span class=\"small\">" + start + " - " + end + "</span><br>\n\t\t\t\t\t\t\t\t\t\t\t" + location + " " + road + " " + message + "\n\t\t\t\t\t\t\t\t\t\t</div>";
 			}
+			// Append to index.html
 		} catch (err) {
 			_didIteratorError2 = true;
 			_iteratorError2 = err;
@@ -88,40 +109,51 @@ var View = function () {
 			}
 		}
 
-		trainMessageList.innerHTML = htmlChunk;
+		situationsList.innerHTML = htmlChunk;
 	}
 
-	/**
-  * Show traffic situations in index.html
-  * @param  {Array} situations 	Array of situation objects
-  */
-	function showSituations(situations, type) {
+	/*********
+  *  MAP
+  *********/
 
-		var situationsList = document.getElementById('situationsList');
-		var htmlChunk = '';
+	var map;
+	var markers = [];
+
+	/**
+  * Adds marker for each deviation to the map
+  * @param {Array} deviations    Array of deviation objects
+  */
+	function addMarkers(deviations) {
+
+		// Clears the map from old markers
+		View.clearMarkers();
+
 		var _iteratorNormalCompletion3 = true;
 		var _didIteratorError3 = false;
 		var _iteratorError3 = undefined;
 
 		try {
-			for (var _iterator3 = situations[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-				var situation = _step3.value;
+			for (var _iterator3 = deviations[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+				var deviation = _step3.value;
 
+				var icon = deviation.IconId;
+				var type = deviation.MessageType;
+				var id = deviation.Id;
+				var coordinate = deviation.Geometry.WGS84;
+				var coords = Model.splitWGS84coordinates(coordinate);
+				var latLng = new google.maps.LatLng(coords[1], coords[0]);
 
-				for (var i = 0; i < situation.Deviation.length; i++) {
-					if (situation.Deviation[i].MessageType == type || type == "Alla") {
-						var messageType = situation.Deviation[i].MessageType;
-						var locationDescriptor = situation.Deviation[i].LocationDescriptor || ' ';
-						var iconId = situation.Deviation[i].IconId;
-						var message = situation.Deviation[i].Message || ' ';
-						var startTime = Model.changeTimeFormat(situation.Deviation[i].StartTime);
-						var endTime = Model.changeTimeFormat(situation.Deviation[i].EndTime);
-						var icon = "<img src=\"dist/images/icons/svg/" + iconId + ".svg\" class=\"situation-icon\">";
+				// Adds a marker at the specified coordinates in latLang and push to the array
+				var marker = new google.maps.Marker({
+					position: latLng,
+					icon: "dist/images/icons/png/" + icon + ".png",
+					map: map,
+					clickable: true
+				});
+				markers.push(marker);
 
-						htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h5>" + messageType + "</h5>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"small\">" + startTime + " - " + endTime + "</span><br>  \n\t\t\t\t\t\t\t\t\t\t\t\t\t" + locationDescriptor + "\n\t\t\t\t\t\t\t\t\t\t\t\t\t" + message + "\n\t\t\t\t\t\t\t\t\t\t\t\t</div>";
-					}
-				}
-				situationsList.innerHTML = htmlChunk;
+				// Adds an infowindow to the markers
+				View.addInfowindow(marker, type, id);
 			}
 		} catch (err) {
 			_didIteratorError3 = true;
@@ -139,143 +171,54 @@ var View = function () {
 		}
 	}
 
-	// Show no result message
-	function showNoResultMessage() {
-		var situationsList = document.getElementById('situationsList');
-		situationsList.innerHTML = "<div class=\"situation\">Inget resultat finns att visa.</div>";
-	}
-
-	// Init empty map
-	function initEmptyMap() {
-		var stockholm = { lat: 59.326792, lng: 18.065131 };
-		var map = new google.maps.Map(document.getElementById('map'), {
-			zoom: 10,
-			center: stockholm
-		});
-	}
-
 	/**
-  * Append total number per situation to dropdown in menu
-  * @param  {String} type    Type of situation
-  * @param  {Number} total   Number of situations
-  */
-	function appendTotalToDropdown(type, total) {
-		var menuSelect = document.getElementById("menu-select");
-		var _iteratorNormalCompletion4 = true;
-		var _didIteratorError4 = false;
-		var _iteratorError4 = undefined;
-
-		try {
-			for (var _iterator4 = menuSelect[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-				var option = _step4.value;
-
-				if (option.value == type) {
-					option.innerHTML = type + " (" + total + ")";
-				}
-			}
-		} catch (err) {
-			_didIteratorError4 = true;
-			_iteratorError4 = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion4 && _iterator4.return) {
-					_iterator4.return();
-				}
-			} finally {
-				if (_didIteratorError4) {
-					throw _iteratorError4;
-				}
-			}
-		}
-	}
-
-	/**
-  * Init map with markers 
-  * @param  {Array} situations 
-  * @param  {String} type       Type of situation
-  */
-	function initMap(situations, type) {
-		// Init map
-		var stockholm = { lat: 59.326792, lng: 18.065131 };
-		var map = new google.maps.Map(document.getElementById('map'), {
-			zoom: 10,
-			center: stockholm
-		});
-
-		// Put markers on the map
-		var _iteratorNormalCompletion5 = true;
-		var _didIteratorError5 = false;
-		var _iteratorError5 = undefined;
-
-		try {
-			for (var _iterator5 = situations[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-				var situation = _step5.value;
-
-				for (var i = 0; i < situation.Deviation.length; i++) {
-					var dev = situation.Deviation[i];
-					if (dev.MessageType == type || type == "Alla") {
-						var iconId = dev.IconId;
-						var type = dev.MessageType;
-						var location = dev.LocationDescriptor;
-						var coordinates = dev.Geometry.WGS84;
-						var id = dev.Id;
-						var coords = Model.splitWGS84coordinates(coordinates);
-						var latLng = new google.maps.LatLng(coords[1], coords[0]);
-						var marker = new google.maps.Marker({
-							position: latLng,
-							icon: "dist/images/icons/png/" + iconId + ".png",
-							map: map,
-							clickable: true
-						});
-						// Attach infowindow to marker
-						var content = type + ": <br>" + location + "<br><span onclick=\"Model.getOneSituationFromAPI('" + id + "', '" + type + "')\">L\xE4s mer</span>";
-						View.attachInfoWindow(marker, content, id);
-					}
-				}
-			}
-		} catch (err) {
-			_didIteratorError5 = true;
-			_iteratorError5 = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion5 && _iterator5.return) {
-					_iterator5.return();
-				}
-			} finally {
-				if (_didIteratorError5) {
-					throw _iteratorError5;
-				}
-			}
-		}
-	}
-
-	/**
-  * Attach info window to marker
+  * Attach infowindow to marker
   * @param  {Object} marker      
-  * @param  {String} content 	
+  * @param  {String} type 	
   * @param  {String} id 		            
   */
-	function attachInfoWindow(marker, content, id) {
+	function addInfowindow(marker, type, id) {
+		var content = type + ": <br><span onclick=\"Model.getOneDeviationFromAPI('" + id + "')\">Visa</span>";
 		var infowindow = new google.maps.InfoWindow({
 			content: content,
 			maxWidth: "200",
 			id: id
 		});
+		// This event listener will open the infowindow when the marker is clicked.
 		marker.addListener('click', function () {
 			infowindow.open(marker.get('map'), marker);
+		});
+	}
+
+	/**
+  * Clear the map from markers, to be used before adding new markers
+  */
+	function clearMarkers() {
+		for (var i = 0; i < markers.length; i++) {
+			markers[i].setMap(null);
+		}
+		markers = [];
+	}
+
+	// Init empty map
+	function initEmptyMap() {
+		var stockholm = { lat: 59.326792, lng: 18.065131 };
+		map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 10,
+			center: stockholm
 		});
 	}
 
 	return {
 		loadingIndicatorOn: loadingIndicatorOn,
 		loadingIndicatorOff: loadingIndicatorOff,
-		showTrainStations: showTrainStations,
-		showTrainMessages: showTrainMessages,
 		appendTotalToDropdown: appendTotalToDropdown,
-		initMap: initMap,
-		showSituations: showSituations,
 		showNoResultMessage: showNoResultMessage,
+		showDeviations: showDeviations,
 		initEmptyMap: initEmptyMap,
-		attachInfoWindow: attachInfoWindow
+		addMarkers: addMarkers,
+		addInfowindow: addInfowindow,
+		clearMarkers: clearMarkers
+
 	}; // end of return
 }(); // end of View

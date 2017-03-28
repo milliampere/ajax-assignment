@@ -3,21 +3,31 @@
  */
 document.addEventListener('DOMContentLoaded', function(event) {
 	document.getElementById('carButton').addEventListener('click', function(){
-		Controller.loadSituationsInterface;
-		document.getElementById('menu-sub').style.display = "flex";  // Add car submenu
+		Model.getTrafficMessagesFromAPI();
+		// Load dropdown totals 
+		Model.getTotalTrafficMessages();
+		Model.getTotalRoadworks();
+		Model.getTotalAccidents();
 	});
-	document.getElementById('trainButton').addEventListener('click', function(){
-		View.showTrainMessages;
-		document.getElementById('menu-sub').style.display = "none"; // Remove car submenu
-	});
-	document.getElementById('mapButton').addEventListener('click', Model.initMap);
 
-	Controller.loadSituationsInterface();
-	
 	// Load dropdown totals 
 	Model.getTotalTrafficMessages();
 	Model.getTotalRoadworks();
 	Model.getTotalAccidents();
+	
+	//Init map and load traffic information
+	View.initEmptyMap();
+	Model.getTrafficMessagesFromAPI();
+
+	// This event listener will call get__FromAPI() when the dropdown option is changed 
+	document.getElementById('menu-select').addEventListener('change', function(){
+			var e = document.getElementById("menu-select");
+	    if(e.selectedIndex >= 0){
+	      if("Trafikmeddelanden" === e.options[e.selectedIndex].value){ Model.getTrafficMessagesFromAPI(); }
+	    	else if("Vägarbeten" === e.options[e.selectedIndex].value){ Model.getRoadworksFromAPI(); }
+	    	else if("Olyckor" === e.options[e.selectedIndex].value){ Model.getRoadAccidentsFromAPI(); }
+	    }
+		});
 	
 });
 

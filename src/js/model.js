@@ -150,6 +150,10 @@ const Model  = (function() {
 				                <EQ name="Deviation.MessageType" value="Vägarbete" />
 				                <EQ name="Deviation.SeverityCode" value="5" />
 				              </ELEMENTMATCH>
+				              <ELEMENTMATCH>
+				                <EQ name="Deviation.MessageType" value="Vägarbete" />
+				                <EQ name="Deviation.SeverityCode" value="4" />
+				              </ELEMENTMATCH>
 				            </OR>
 			            </FILTER>
 			            <INCLUDE>Deviation.MessageType</INCLUDE>
@@ -360,6 +364,7 @@ const Model  = (function() {
 			// Furthermore, the deviations do not always return all properties (almost empty deviations..), and I have to exclude 
 			// those without geolocation. 
 			var deviations = [];
+			var number = 0;
 			for(var situation of situations){
 				for(var i = 0; i < situation.Deviation.length; i++){
 					var dev = situation.Deviation[i];
@@ -370,6 +375,10 @@ const Model  = (function() {
 						//console.log("Exkluderad");
 					}
 					else {
+						// Add a number to each deviation
+						number = number + 1;
+						dev.Number = number;
+						// Push to array
 						deviations.push(dev);
 					}
 				}
@@ -402,6 +411,10 @@ const Model  = (function() {
               <ELEMENTMATCH>
                 <EQ name="Deviation.MessageType" value="Vägarbete" />
                 <EQ name="Deviation.SeverityCode" value="5" />
+              </ELEMENTMATCH>
+              <ELEMENTMATCH>
+                <EQ name="Deviation.MessageType" value="Vägarbete" />
+                <EQ name="Deviation.SeverityCode" value="4" />
               </ELEMENTMATCH>
             </OR>
         </FILTER>
@@ -454,6 +467,7 @@ const Model  = (function() {
 			// Furthermore, the deviations do not always return all properties (almost empty deviations..), and I have to exclude 
 			// those without geolocation. 
 			var deviations = [];
+			var number = 0;
 			for(var situation of situations){
 				for(var i = 0; i < situation.Deviation.length; i++){
 					var dev = situation.Deviation[i];
@@ -464,6 +478,10 @@ const Model  = (function() {
 						//console.log("Exkluderad");
 					}
 					else {
+						// Add a number to each deviation
+						number = number + 1;
+						dev.Number = number;
+						// Push to array
 						deviations.push(dev);
 					}
 				}
@@ -547,6 +565,7 @@ const Model  = (function() {
 			// Furthermore, the deviations do not always return all properties (almost empty deviations..), and I have to exclude 
 			// those without geolocation. 
 			var deviations = [];
+			var number = 0;
 			for(var situation of situations){
 				for(var i = 0; i < situation.Deviation.length; i++){
 					var dev = situation.Deviation[i];
@@ -557,6 +576,10 @@ const Model  = (function() {
 						//console.log("Exkluderad");
 					}
 					else {
+						// Add a number to each deviation
+						number = number + 1;
+						dev.Number = number;
+						// Push to array
 						deviations.push(dev);
 					}
 				}
@@ -576,7 +599,7 @@ const Model  = (function() {
 	 * Get one traffic situation information from API
 	 * @param {String} id  		Id of the deviation
 	 */
-	function getOneDeviationFromAPI(id) {
+	function getOneDeviationFromAPI(id, number) {
 
 		var question = `
 		<REQUEST>
@@ -618,6 +641,8 @@ const Model  = (function() {
 						//console.log("Borta");
 					}
 					else {
+						// Add the deviation number to the object
+						dev.Number = number;
 						deviations.push(dev);
 					}
 				}

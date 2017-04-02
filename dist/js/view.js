@@ -90,10 +90,12 @@ var View = function () {
 				var start = Model.changeTimeFormat(deviation.StartTime);
 				var end = Model.changeTimeFormat(deviation.EndTime);
 				var icon = "<img src=\"dist/images/icons/svg/" + deviation.IconId + ".svg\" class=\"situation-icon\">";
+				var number = deviation.Number;
 
-				htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t<h5>" + type + "</h5>\n\t\t\t\t\t\t\t\t\t\t\t" + code + "\n\t\t\t\t\t\t\t\t\t\t\t<span class=\"small\">" + start + " - " + end + "</span><br>\n\t\t\t\t\t\t\t\t\t\t\t" + location + " " + road + " " + message + "\n\t\t\t\t\t\t\t\t\t\t</div>";
+				htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t<h4>" + code + " " + number + "</h4>\n\t\t\t\t\t\t\t\t\t\t\t<span class=\"small\">" + start + " - " + end + "</span><br>\n\t\t\t\t\t\t\t\t\t\t\t" + location + " " + road + " " + message + "\n\t\t\t\t\t\t\t\t\t\t\t<div class=\"deviation-number\">" + number + "</div>\n\t\t\t\t\t\t\t\t\t\t</div>";
 			}
-			// Append to index.html
+
+			// View "Visa alla", not so pretty code
 		} catch (err) {
 			_didIteratorError2 = true;
 			_iteratorError2 = err;
@@ -109,6 +111,11 @@ var View = function () {
 			}
 		}
 
+		if (deviations.length == 1) {
+			htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t<a href=\"\" onclick=\"Model.View.showDeviations()\">Visa alla trafikmeddelanden</a>\n\t\t\t\t\t\t\t\t\t\t</div>";
+		}
+
+		// Append to index.html
 		situationsList.innerHTML = htmlChunk;
 	}
 
@@ -139,9 +146,11 @@ var View = function () {
 				var icon = deviation.IconId;
 				var type = deviation.MessageType;
 				var id = deviation.Id;
+				var code = deviation.MessageCode;
 				var coordinate = deviation.Geometry.WGS84;
 				var coords = Model.splitWGS84coordinates(coordinate);
 				var latLng = new google.maps.LatLng(coords[1], coords[0]);
+				var number = deviation.Number;
 
 				// Adds a marker at the specified coordinates in latLang and push to the array
 				var marker = new google.maps.Marker({
@@ -153,7 +162,7 @@ var View = function () {
 				markers.push(marker);
 
 				// Adds an infowindow to the markers
-				View.addInfowindow(marker, type, id);
+				View.addInfowindow(marker, code, id, number);
 			}
 		} catch (err) {
 			_didIteratorError3 = true;
@@ -177,8 +186,8 @@ var View = function () {
   * @param  {String} type 	
   * @param  {String} id 		            
   */
-	function addInfowindow(marker, type, id) {
-		var content = type + ": <br><span onclick=\"Model.getOneDeviationFromAPI('" + id + "')\">Visa</span>";
+	function addInfowindow(marker, code, id, number) {
+		var content = "<div class=\"deviation-number deviation-number-inline\">" + number + "</div> " + code + " <br><span onclick=\"Model.getOneDeviationFromAPI('" + id + "'," + number + ")\">Visa info</span>";
 		var infowindow = new google.maps.InfoWindow({
 			content: content,
 			maxWidth: "200",

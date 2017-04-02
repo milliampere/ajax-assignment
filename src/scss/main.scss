@@ -1,9 +1,17 @@
 @import '../../node_modules/frow/sass/frow';
 
+@import url('https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Oswald');
+
 /*Fonts*/
-$heading: Georgia, sans-serif;
+$site-name: 'Oswald', sans-serif;
+$heading: 'Open Sans Condensed', sans-serif;
 $paragraf: Georgia, sans-serif;
 
+
+/*font-family: 'Oswald', sans-serif;
+font-family: 'Open Sans Condensed', sans-serif;
+font-family: 'Dosis', sans-serif;
+*/
 /*Colors*/
 $background: #bad0b8;
 $white: #FFF; 
@@ -40,6 +48,7 @@ img {
 // Typography
 h1, h2, h3, h4, h5, h6 {
 	font-family: $heading;
+	letter-spacing: 1px;
 }
 
 h1 {font-size: 2.5rem;}
@@ -52,7 +61,8 @@ h6 {font-size: 0.875rem;}
 .small {
 	font-size: 0.8rem;
 	color: #a8a8a8;
-	font-family: Verdana;
+	font-family: $heading;
+	letter-spacing: 1px;
 }
 
 /*Styles the menu*/
@@ -87,6 +97,14 @@ h6 {font-size: 0.875rem;}
 	box-shadow: none;
 	text-shadow: none;
 	font-size: 0.9rem;
+}
+
+.menu-site-name {
+	font-family: $site-name;
+	font-size: 1.5rem;
+	margin-left: 1rem;
+	color: #f8c628;
+	letter-spacing: 1px;
 }
 
 
@@ -133,12 +151,36 @@ width: 100%;
 	margin: 0 1rem 1rem 1rem;
 	padding: 1rem;
 	width: 100%;
+	position: relative;
 }
 
 .situation-icon {
 	width: 40px;
 	float:left;
 	margin-right: 10px;
+}
+
+.deviation-number {
+	background-color: $background;
+	border-radius: 20%;
+	width: 22px;
+	height: 22px;
+	text-align: center;
+	color: #000;
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	font-family: $heading;
+	font-weight: 600;
+	border: 1px solid $yellow;
+	font-size: 0.9rem;
+}
+
+.deviation-number-inline {
+	position: static;
+	display: inline;
+	padding: 0 4px;
+	font-size: 0.8rem;
 }
 
 /* Add animation to content (sliding from bottom when loaded) */

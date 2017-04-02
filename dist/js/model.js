@@ -125,7 +125,7 @@ var Model = function () {
   */
 	function getTotalRoadworks() {
 
-		var question = '\n\t\t\t<REQUEST>\n\t\t\t      <LOGIN authenticationkey="' + apikey + '" />\n\t\t\t      <QUERY objecttype="Situation">\n\t\t\t            <FILTER>\n\t\t\t\t\t        \t' + stockholm + '\n\t\t\t\t        \t\t<OR>\n\t\t\t\t              <ELEMENTMATCH>\n\t\t\t\t                <EQ name="Deviation.MessageType" value="V\xE4garbete" />\n\t\t\t\t                <EQ name="Deviation.SeverityCode" value="5" />\n\t\t\t\t              </ELEMENTMATCH>\n\t\t\t\t            </OR>\n\t\t\t            </FILTER>\n\t\t\t            <INCLUDE>Deviation.MessageType</INCLUDE>\n\t\t\t            <INCLUDE>Deviation.Geometry.WGS84</INCLUDE>\n\t\t\t      </QUERY>\n\t\t\t</REQUEST>\n\t\t';
+		var question = '\n\t\t\t<REQUEST>\n\t\t\t      <LOGIN authenticationkey="' + apikey + '" />\n\t\t\t      <QUERY objecttype="Situation">\n\t\t\t            <FILTER>\n\t\t\t\t\t        \t' + stockholm + '\n\t\t\t\t        \t\t<OR>\n\t\t\t\t              <ELEMENTMATCH>\n\t\t\t\t                <EQ name="Deviation.MessageType" value="V\xE4garbete" />\n\t\t\t\t                <EQ name="Deviation.SeverityCode" value="5" />\n\t\t\t\t              </ELEMENTMATCH>\n\t\t\t\t              <ELEMENTMATCH>\n\t\t\t\t                <EQ name="Deviation.MessageType" value="V\xE4garbete" />\n\t\t\t\t                <EQ name="Deviation.SeverityCode" value="4" />\n\t\t\t\t              </ELEMENTMATCH>\n\t\t\t\t            </OR>\n\t\t\t            </FILTER>\n\t\t\t            <INCLUDE>Deviation.MessageType</INCLUDE>\n\t\t\t            <INCLUDE>Deviation.Geometry.WGS84</INCLUDE>\n\t\t\t      </QUERY>\n\t\t\t</REQUEST>\n\t\t';
 
 		var fetchRequest = fetch(url, {
 			method: 'post',
@@ -300,6 +300,7 @@ var Model = function () {
 			// Furthermore, the deviations do not always return all properties (almost empty deviations..), and I have to exclude 
 			// those without geolocation. 
 			var deviations = [];
+			var number = 0;
 			var _iteratorNormalCompletion3 = true;
 			var _didIteratorError3 = false;
 			var _iteratorError3 = undefined;
@@ -315,6 +316,10 @@ var Model = function () {
 						} else if (dev.Geometry === undefined || dev.MessageTypeValue == "SpeedManagement") {
 							//console.log("Exkluderad");
 						} else {
+							// Add a number to each deviation
+							number = number + 1;
+							dev.Number = number;
+							// Push to array
 							deviations.push(dev);
 						}
 					}
@@ -351,7 +356,7 @@ var Model = function () {
 
 		View.loadingIndicatorOn();
 
-		var question = '\n\t\t<REQUEST>\n      <LOGIN authenticationkey="' + apikey + '" />\n      <QUERY objecttype="Situation" orderby="Deviation.CreationTime desc">\n        <FILTER>\n        \t' + stockholm + '\n        \t\t<OR>\n              <ELEMENTMATCH>\n                <EQ name="Deviation.MessageType" value="V\xE4garbete" />\n                <EQ name="Deviation.SeverityCode" value="5" />\n              </ELEMENTMATCH>\n            </OR>\n        </FILTER>\n        <INCLUDE>Deviation.CreationTime</INCLUDE>\n        <INCLUDE>Deviation.EndTime</INCLUDE>\n        <INCLUDE>Deviation.Geometry.WGS84</INCLUDE>\n        <INCLUDE>Deviation.IconId</INCLUDE>\n        <INCLUDE>Deviation.Id</INCLUDE>\n        <INCLUDE>Deviation.LocationDescriptor</INCLUDE>\n        <INCLUDE>Deviation.MessageCode</INCLUDE>\n        <INCLUDE>Deviation.MessageType</INCLUDE>\n        <INCLUDE>Deviation.RoadNumber</INCLUDE>\n        <INCLUDE>Deviation.SeverityText</INCLUDE>\n        <INCLUDE>Deviation.StartTime</INCLUDE>\n      </QUERY>\n\t\t</REQUEST>\n\t\t';
+		var question = '\n\t\t<REQUEST>\n      <LOGIN authenticationkey="' + apikey + '" />\n      <QUERY objecttype="Situation" orderby="Deviation.CreationTime desc">\n        <FILTER>\n        \t' + stockholm + '\n        \t\t<OR>\n              <ELEMENTMATCH>\n                <EQ name="Deviation.MessageType" value="V\xE4garbete" />\n                <EQ name="Deviation.SeverityCode" value="5" />\n              </ELEMENTMATCH>\n              <ELEMENTMATCH>\n                <EQ name="Deviation.MessageType" value="V\xE4garbete" />\n                <EQ name="Deviation.SeverityCode" value="4" />\n              </ELEMENTMATCH>\n            </OR>\n        </FILTER>\n        <INCLUDE>Deviation.CreationTime</INCLUDE>\n        <INCLUDE>Deviation.EndTime</INCLUDE>\n        <INCLUDE>Deviation.Geometry.WGS84</INCLUDE>\n        <INCLUDE>Deviation.IconId</INCLUDE>\n        <INCLUDE>Deviation.Id</INCLUDE>\n        <INCLUDE>Deviation.LocationDescriptor</INCLUDE>\n        <INCLUDE>Deviation.MessageCode</INCLUDE>\n        <INCLUDE>Deviation.MessageType</INCLUDE>\n        <INCLUDE>Deviation.RoadNumber</INCLUDE>\n        <INCLUDE>Deviation.SeverityText</INCLUDE>\n        <INCLUDE>Deviation.StartTime</INCLUDE>\n      </QUERY>\n\t\t</REQUEST>\n\t\t';
 
 		var fetchRequest = fetch(url, {
 			method: 'post',
@@ -384,6 +389,7 @@ var Model = function () {
 			// Furthermore, the deviations do not always return all properties (almost empty deviations..), and I have to exclude 
 			// those without geolocation. 
 			var deviations = [];
+			var number = 0;
 			var _iteratorNormalCompletion4 = true;
 			var _didIteratorError4 = false;
 			var _iteratorError4 = undefined;
@@ -399,6 +405,10 @@ var Model = function () {
 						} else if (dev.Geometry === undefined) {
 							//console.log("Exkluderad");
 						} else {
+							// Add a number to each deviation
+							number = number + 1;
+							dev.Number = number;
+							// Push to array
 							deviations.push(dev);
 						}
 					}
@@ -468,6 +478,7 @@ var Model = function () {
 			// Furthermore, the deviations do not always return all properties (almost empty deviations..), and I have to exclude 
 			// those without geolocation. 
 			var deviations = [];
+			var number = 0;
 			var _iteratorNormalCompletion5 = true;
 			var _didIteratorError5 = false;
 			var _iteratorError5 = undefined;
@@ -483,6 +494,10 @@ var Model = function () {
 						} else if (dev.Geometry === undefined) {
 							//console.log("Exkluderad");
 						} else {
+							// Add a number to each deviation
+							number = number + 1;
+							dev.Number = number;
+							// Push to array
 							deviations.push(dev);
 						}
 					}
@@ -516,7 +531,7 @@ var Model = function () {
   * Get one traffic situation information from API
   * @param {String} id  		Id of the deviation
   */
-	function getOneDeviationFromAPI(id) {
+	function getOneDeviationFromAPI(id, number) {
 
 		var question = '\n\t\t<REQUEST>\n      <LOGIN authenticationkey="' + apikey + '" />\n      <QUERY objecttype="Situation">\n      \t<FILTER>\n\t\t\t\t<EQ name="Deviation.Id" value="' + id + '" />\n\t\t\t\t</FILTER>\n      </QUERY>\n\t\t</REQUEST>\n\t\t';
 
@@ -552,6 +567,8 @@ var Model = function () {
 						if (dev.Id != id) {
 							//console.log("Borta");
 						} else {
+							// Add the deviation number to the object
+							dev.Number = number;
 							deviations.push(dev);
 						}
 					}

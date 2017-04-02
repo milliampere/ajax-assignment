@@ -61,15 +61,24 @@ const View  = (function() {
 			var start = Model.changeTimeFormat(deviation.StartTime);
 			var end = Model.changeTimeFormat(deviation.EndTime);
 			var icon = `<img src="dist/images/icons/svg/${deviation.IconId}.svg" class="situation-icon">`;
-		
+			var number = deviation.Number;
+
 			htmlChunk += `<div class="situation card-shadow">
 											${icon}
-											<h5>${type}</h5>
-											${code}
+											<h4>${code} ${number}</h4>
 											<span class="small">${start} - ${end}</span><br>
 											${location} ${road} ${message}
+											<div class="deviation-number">${number}</div>
 										</div>`;
 			}
+
+			// View "Visa alla", not so pretty code
+			if(deviations.length == 1){
+				htmlChunk += `<div class="situation card-shadow">
+											<a href="" onclick="Model.View.showDeviations()">Visa alla trafikmeddelanden</a>
+										</div>`;
+			}
+
 		// Append to index.html
 		situationsList.innerHTML = htmlChunk;
 	}
@@ -95,9 +104,11 @@ const View  = (function() {
 			var icon = deviation.IconId;
 			var type = deviation.MessageType;
 			var id = deviation.Id;
+			var code = deviation.MessageCode;
 			var coordinate = deviation.Geometry.WGS84;
 			var coords = Model.splitWGS84coordinates(coordinate);
 			var latLng = new google.maps.LatLng(coords[1],coords[0]);
+			var number = deviation.Number;
 
 			// Adds a marker at the specified coordinates in latLang and push to the array
 			var marker = new google.maps.Marker({
@@ -109,7 +120,7 @@ const View  = (function() {
 			markers.push(marker);
 		  
 		  // Adds an infowindow to the markers
-	  	View.addInfowindow(marker, type, id);
+	  	View.addInfowindow(marker, code, id, number);
 		}		
 	}
 
@@ -119,8 +130,8 @@ const View  = (function() {
 	 * @param  {String} type 	
 	 * @param  {String} id 		            
 	 */
-	function addInfowindow(marker, type, id) {
-		var content = `${type}: <br><span onclick="Model.getOneDeviationFromAPI('${id}')">Visa</span>`;
+	function addInfowindow(marker, code, id, number) {
+		var content = `<div class="deviation-number deviation-number-inline">${number}</div> ${code} <br><span onclick="Model.getOneDeviationFromAPI('${id}',${number})">Visa info</span>`;
 	  var infowindow = new google.maps.InfoWindow({
 	    content: content,
 	    maxWidth: "200",

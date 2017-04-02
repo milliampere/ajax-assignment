@@ -40,7 +40,7 @@ gulp.task('sass', () => {
 gulp.task('babel', () => {
     return gulp.src('./src/js/*.js')            // The input files
         .pipe(babel({                           // Babel
-            presets: ['latest']
+            presets: ['env']
         }))
         .pipe(gulp.dest('dist/js'));            // Save file
 });

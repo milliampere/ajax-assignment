@@ -28,4 +28,6 @@ Create an application that fetch data from open API's and display it as a html s
 ### TODO for improvements
 * Close previous infowindows when a new marker is clicked. 
 * Add pagination for the results 
+* Add a number to each text box and marker on the map.
+* Some information and maybe a name: "Trafiken i Stockholm"
 * Add traffic information for trains and ferries as well

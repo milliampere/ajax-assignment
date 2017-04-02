@@ -348,7 +348,7 @@ const Model  = (function() {
 
 		fetchRequest.then(data => {
 			console.log("-- getTrafficMessagesFromAPI ");
-			setTimeout(View.loadingIndicatorOff, 400);   // Timeout for show off
+			View.loadingIndicatorOff();
 			var situations = data.RESPONSE.RESULT[0].Situation;
 
 	    // If situations is empty stop execution
@@ -451,7 +451,7 @@ const Model  = (function() {
 
 		fetchRequest.then(data => {
 			console.log("-- getRoadworksFromAPI ");
-			setTimeout(View.loadingIndicatorOff, 400);   // Timeout for show off
+			View.loadingIndicatorOff();
 			var situations = data.RESPONSE.RESULT[0].Situation;
 
 	    // If situations is empty stop execution
@@ -549,7 +549,7 @@ const Model  = (function() {
 
 		fetchRequest.then(data => {
 			console.log("-- getRoadAccidentsFromAPI ");
-			setTimeout(View.loadingIndicatorOff, 400);   // Timeout for show off
+			View.loadingIndicatorOff();
 			var situations = data.RESPONSE.RESULT[0].Situation;
 
 	    // If situations is empty stop execution

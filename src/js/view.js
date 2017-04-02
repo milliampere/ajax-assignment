@@ -65,22 +65,35 @@ const View  = (function() {
 
 			htmlChunk += `<div class="situation card-shadow">
 											${icon}
-											<h4>${code} ${number}</h4>
+											<h4>${code}</h4>
 											<span class="small">${start} - ${end}</span><br>
-											${location} ${road} ${message}
+											${location} ${message}
 											<div class="deviation-number">${number}</div>
 										</div>`;
 			}
 
 			// View "Visa alla", not so pretty code
 			if(deviations.length == 1){
+				var allDeviations = [];
+
+				for(var marker of markers) {
+					allDeviations.push(marker.dev);
+				}
 				htmlChunk += `<div class="situation card-shadow">
-											<a href="" onclick="Model.View.showDeviations()">Visa alla trafikmeddelanden</a>
+											<span id="show-all-deviations">Visa alla</span><br>
 										</div>`;
 			}
 
 		// Append to index.html
 		situationsList.innerHTML = htmlChunk;
+
+		// View "Visa alla", not so pretty code
+		if(deviations.length == 1){
+		document.getElementById('show-all-deviations').addEventListener('click', function(){
+			View.showDeviations(allDeviations);
+		});
+		}
+
 	}
 
 
@@ -115,7 +128,8 @@ const View  = (function() {
 	      position: latLng,
 	      icon: `dist/images/icons/png/${icon}.png`,
 	      map: map, 
-	      clickable: true, 
+	      clickable: true,
+	      dev: deviation, 
 		    });
 			markers.push(marker);
 		  

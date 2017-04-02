@@ -92,7 +92,7 @@ var View = function () {
 				var icon = "<img src=\"dist/images/icons/svg/" + deviation.IconId + ".svg\" class=\"situation-icon\">";
 				var number = deviation.Number;
 
-				htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t<h4>" + code + " " + number + "</h4>\n\t\t\t\t\t\t\t\t\t\t\t<span class=\"small\">" + start + " - " + end + "</span><br>\n\t\t\t\t\t\t\t\t\t\t\t" + location + " " + road + " " + message + "\n\t\t\t\t\t\t\t\t\t\t\t<div class=\"deviation-number\">" + number + "</div>\n\t\t\t\t\t\t\t\t\t\t</div>";
+				htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t" + icon + "\n\t\t\t\t\t\t\t\t\t\t\t<h4>" + code + "</h4>\n\t\t\t\t\t\t\t\t\t\t\t<span class=\"small\">" + start + " - " + end + "</span><br>\n\t\t\t\t\t\t\t\t\t\t\t" + location + " " + message + "\n\t\t\t\t\t\t\t\t\t\t\t<div class=\"deviation-number\">" + number + "</div>\n\t\t\t\t\t\t\t\t\t\t</div>";
 			}
 
 			// View "Visa alla", not so pretty code
@@ -112,11 +112,45 @@ var View = function () {
 		}
 
 		if (deviations.length == 1) {
-			htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t<a href=\"\" onclick=\"Model.View.showDeviations()\">Visa alla trafikmeddelanden</a>\n\t\t\t\t\t\t\t\t\t\t</div>";
+			var allDeviations = [];
+
+			var _iteratorNormalCompletion3 = true;
+			var _didIteratorError3 = false;
+			var _iteratorError3 = undefined;
+
+			try {
+				for (var _iterator3 = markers[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+					var marker = _step3.value;
+
+					allDeviations.push(marker.dev);
+				}
+			} catch (err) {
+				_didIteratorError3 = true;
+				_iteratorError3 = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion3 && _iterator3.return) {
+						_iterator3.return();
+					}
+				} finally {
+					if (_didIteratorError3) {
+						throw _iteratorError3;
+					}
+				}
+			}
+
+			htmlChunk += "<div class=\"situation card-shadow\">\n\t\t\t\t\t\t\t\t\t\t\t<span id=\"show-all-deviations\">Visa alla</span><br>\n\t\t\t\t\t\t\t\t\t\t</div>";
 		}
 
 		// Append to index.html
 		situationsList.innerHTML = htmlChunk;
+
+		// View "Visa alla", not so pretty code
+		if (deviations.length == 1) {
+			document.getElementById('show-all-deviations').addEventListener('click', function () {
+				View.showDeviations(allDeviations);
+			});
+		}
 	}
 
 	/*********
@@ -135,13 +169,13 @@ var View = function () {
 		// Clears the map from old markers
 		View.clearMarkers();
 
-		var _iteratorNormalCompletion3 = true;
-		var _didIteratorError3 = false;
-		var _iteratorError3 = undefined;
+		var _iteratorNormalCompletion4 = true;
+		var _didIteratorError4 = false;
+		var _iteratorError4 = undefined;
 
 		try {
-			for (var _iterator3 = deviations[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-				var deviation = _step3.value;
+			for (var _iterator4 = deviations[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+				var deviation = _step4.value;
 
 				var icon = deviation.IconId;
 				var type = deviation.MessageType;
@@ -157,7 +191,8 @@ var View = function () {
 					position: latLng,
 					icon: "dist/images/icons/png/" + icon + ".png",
 					map: map,
-					clickable: true
+					clickable: true,
+					dev: deviation
 				});
 				markers.push(marker);
 
@@ -165,16 +200,16 @@ var View = function () {
 				View.addInfowindow(marker, code, id, number);
 			}
 		} catch (err) {
-			_didIteratorError3 = true;
-			_iteratorError3 = err;
+			_didIteratorError4 = true;
+			_iteratorError4 = err;
 		} finally {
 			try {
-				if (!_iteratorNormalCompletion3 && _iterator3.return) {
-					_iterator3.return();
+				if (!_iteratorNormalCompletion4 && _iterator4.return) {
+					_iterator4.return();
 				}
 			} finally {
-				if (_didIteratorError3) {
-					throw _iteratorError3;
+				if (_didIteratorError4) {
+					throw _iteratorError4;
 				}
 			}
 		}
